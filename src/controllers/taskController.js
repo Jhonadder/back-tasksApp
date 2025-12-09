@@ -179,17 +179,19 @@ async function updateTask(req, res) {
     const isCreator = task.CreatedByUserId === userId;
     const isAssigned = task.AssignedToUserId === userId;
 
-    if (role !== 'ADMIN') {
-      if (!isCreator) {
-        // Si no es creador y está asignado: solo puede marcar FINALIZADA
-        if (!isAssigned) {
-          return res.status(403).json({ message: 'No tenés permisos para editar esta tarea' });
-        }
-        if (status !== 'FINALIZADA') {
-          return res.status(403).json({ message: 'Solo podés marcar como FINALIZADA' });
-        }
-      }
-    }
+      // por ahora comento esto para no restringir por roles
+      
+    // if (role !== 'ADMIN') {
+    //   if (!isCreator) {
+    //     // Si no es creador y está asignado: solo puede marcar FINALIZADA
+    //     if (!isAssigned) {
+    //       return res.status(403).json({ message: 'No tenés permisos para editar esta tarea' });
+    //     }
+    //     if (status !== 'FINALIZADA') {
+    //       return res.status(403).json({ message: 'Solo podés marcar como FINALIZADA' });
+    //     }
+    //   }
+    // }
 
     const oldTaskRes = await pool.request()
       .input('Id', sql.Int, id)

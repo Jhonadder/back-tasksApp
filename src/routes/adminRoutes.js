@@ -2,7 +2,13 @@
 const express = require('express');
 const auth = require('../middleware/auth');
 const { requireAdmin } = require('../middleware/roles');
-const { getSummary, getTasksForCalendar } = require('../controllers/adminController');
+const {
+  getSummary,
+  getCalendar,
+  getTasksByDate,
+  getTasksByStatus,
+  sendTasksStatusReportEmail
+} = require('../controllers/adminController');
 
 const router = express.Router();
 
@@ -10,10 +16,19 @@ const router = express.Router();
 router.use(auth);
 router.use(requireAdmin);
 
-// GET /api/admin/summary
+// GET /api/admin/summary?from=YYYY-MM-DD&to=YYYY-MM-DD
 router.get('/summary', getSummary);
 
-// GET /api/admin/tasks/calendar?from=YYYY-MM-DD&to=YYYY-MM-DD
-router.get('/tasks/calendar', getTasksForCalendar);
+// GET /api/admin/calendar?from=YYYY-MM-DD&to=YYYY-MM-DD
+router.get('/calendar', getCalendar);
+
+// GET /api/admin/tasks-by-date?date=YYYY-MM-DD
+router.get('/tasks-by-date', getTasksByDate);
+
+// GET /api/admin/tasks-by-status?status=PENDING&from=YYYY-MM-DD&to=YYYY-MM-DD
+router.get('/tasks-by-status', getTasksByStatus);
+
+// 👉 nuevo: enviar reporte por mail
+router.post('/tasks-by-status/send-email', sendTasksStatusReportEmail);
 
 module.exports = router;

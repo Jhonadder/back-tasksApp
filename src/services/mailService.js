@@ -112,7 +112,79 @@ async function sendDueTasksEmail(to, userName, tasksForToday) {
     html
   });
 }
+
+async function sendStatusReportEmail(toEmail, userName, statusLabel, tasks, fromDate, toDate) {
+  const rangeText = `${fromDate.toLocaleDateString('es-AR')} al ${toDate.toLocaleDateString('es-AR')}`;
+
+  const rowsHtml = tasks.map((t, i) => {
+    const due = t.DueDate
+      ? new Date(t.DueDate).toLocaleString('es-AR')
+      : 'Sin fecha';
+    return `
+      <tr>
+        <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb;">${i + 1}</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb;">${t.Title}</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb;">${t.AssignedToName || 'Sin asignar'}</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb;">${t.Priority || '-'}</td>
+        <td style="padding: 6px 8px; border-bottom: 1px solid #e5e7eb;">${due}</td>
+      </tr>
+    `;
+  }).join('');
+
+  const html = `
+  <div style="font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background-color:#f3f4f6; padding:20px;">
+    <div style="max-width:700px; margin:0 auto; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 10px 25px rgba(15,23,42,0.12);">
+      <div style="background:linear-gradient(135deg,#4f46e5,#22c55e); padding:16px 20px; color:#f9fafb;">
+        <h1 style="margin:0; font-size:20px;">Reporte de tareas ${statusLabel.toLowerCase()}</h1>
+        <p style="margin:4px 0 0; font-size:13px;">Rango: ${rangeText}</p>
+      </div>
+      <div style="padding:16px 20px;">
+        <p style="font-size:14px; color:#111827;">
+          Hola ${userName || ''},
+        </p>
+        <p style="font-size:13px; color:#374151; margin-bottom:12px;">
+          Te enviamos el detalle de las tareas <strong>${statusLabel.toLowerCase()}</strong> para el período <strong>${rangeText}</strong>.
+        </p>
+
+        <table style="width:100%; border-collapse:collapse; font-size:12px; color:#111827;">
+          <thead>
+            <tr style="background-color:#f3f4f6;">
+              <th style="text-align:left; padding:6px 8px;">#</th>
+              <th style="text-align:left; padding:6px 8px;">Título</th>
+              <th style="text-align:left; padding:6px 8px;">Asignada a</th>
+              <th style="text-align:left; padding:6px 8px;">Prioridad</th>
+              <th style="text-align:left; padding:6px 8px;">Vencimiento</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rowsHtml || `
+              <tr>
+                <td colspan="5" style="padding:10px; text-align:center; color:#6b7280;">
+                  No hay tareas en este estado para el período indicado.
+                </td>
+              </tr>
+            `}
+          </tbody>
+        </table>
+
+        <p style="font-size:12px; color:#6b7280; margin-top:16px;">
+          Enviado automáticamente desde la app de tareas.
+        </p>
+      </div>
+    </div>
+  </div>
+  `;
+
+  await transporter.sendMail({
+    from: process.env.MAIL_FROM || 'no-reply@tusistema.com',
+    to: toEmail,
+    subject: `Reporte de tareas ${statusLabel} - Dashboard`,
+    html
+  });
+}
+
 module.exports = {
   sendTaskAssignedEmail,
-  sendDueTasksEmail 
+  sendDueTasksEmail,
+  sendStatusReportEmail 
 };
